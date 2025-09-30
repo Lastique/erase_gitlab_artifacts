@@ -34,14 +34,19 @@ def load_jobs_page(conn, base_path, page, headers):
 	return job_ids
 
 # Erases a job with the given id
-def erase_job(conn, base_path, job_id, headers):
+def erase_job(conn, base_path, job_id, headers, ignore_errors):
 	path = base_path + f"/jobs/{job_id}/erase"
 	logging.info(f"Erasing job {job_id}: {path}")
 	conn.request("POST", path, headers = headers)
 
 	resp = conn.getresponse()
 	if int(resp.status // 100) != 2:
-		raise RuntimeError(f"Erasing job {job_id} failed, server returned error {resp.status} {resp.reason}")
+		descr = f"Erasing job {job_id} failed, server returned error {resp.status} {resp.reason}"
+		if ignore_errors:
+			logging.warning(descr)
+		else:
+			raise RuntimeError(descr)
+
 	resp.read()
 
 def main():
@@ -51,6 +56,7 @@ def main():
 		arg_parser.add_argument("-p", "--project", required = True, help = "GitLab project id")
 		arg_parser.add_argument("-T", "--token", required = True, help = "Access token for the project (must have \"api\" permission)")
 		arg_parser.add_argument("-k", "--keep", default = 0, type = int, help = "Number of the most recent artifacts to keep (default: 0)")
+		arg_parser.add_argument("-I", "--ignore-errors", action = "store_true", help = "Ignore errors returned by server for artifact erasing requests")
 		arg_parser.add_argument("-v", "--verbose", default = logging.INFO, type = int, help = f"Logging level verbosity (default: {logging.INFO})")
 		args = arg_parser.parse_args()
 
@@ -71,7 +77,7 @@ def main():
 
 				for job_id in job_ids:
 					if job_index >= args.keep:
-						erase_job(conn, base_path, job_id, headers)
+						erase_job(conn, base_path, job_id, headers, args.ignore_errors)
 
 					job_index += 1
 			else:
