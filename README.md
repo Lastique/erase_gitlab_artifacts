@@ -7,6 +7,6 @@ and erase outdated artifacts to free storage space.
 
 NOTE: Artifact removal is irreversible. Since the script is intended to be run
 automatically, it will not ask questions and will go ahead and remove whatever
-was specified on the command line. *BE CAREFUL AND USE ON YUR OWN RISK!*
+was specified on the command line. *BE CAREFUL AND USE AT YOUR OWN RISK!*
 The author is not responsible for any data loss that may be caused by this
 utility.
