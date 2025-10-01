@@ -4,6 +4,7 @@
 #
 # The script erases artifacts of a GitLab project.
 
+import sys
 import json
 import argparse
 import logging
@@ -86,8 +87,10 @@ def main():
 			page += 1
 
 		logging.info("Done.")
+		return 0
 	except Exception:
 		logging.exception("Failure")
+		return 1
 
 if __name__ == "__main__":
-	main()
+	sys.exit(main())
