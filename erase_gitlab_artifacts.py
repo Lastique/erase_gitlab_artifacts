@@ -55,7 +55,8 @@ def main():
 		arg_parser = argparse.ArgumentParser(description = "The script permanently erases artifacts of a GitLab project.")
 		arg_parser.add_argument("-H", "--host", default = "gitlab.com", help = "GitLab instance hostname (default: gitlab.com)")
 		arg_parser.add_argument("-p", "--project", required = True, help = "GitLab project id")
-		arg_parser.add_argument("-T", "--token", required = True, help = "Access token for the project (must have \"api\" permission)")
+		arg_parser.add_argument("-P", "--private-token", help = "Private access token for the project (must have \"api\" permission)")
+		arg_parser.add_argument("-J", "--job-token", help = "Job access token")
 		arg_parser.add_argument("-k", "--keep", default = 0, type = int, help = "Number of the most recent artifacts to keep (default: 0)")
 		arg_parser.add_argument("-I", "--ignore-errors", action = "store_true", help = "Ignore errors returned by server for artifact erasing requests")
 		arg_parser.add_argument("-v", "--verbose", default = logging.INFO, type = int, help = f"Logging level verbosity (default: {logging.INFO})")
@@ -67,7 +68,13 @@ def main():
 		conn.connect()
 
 		base_path = f"/api/v4/projects/{args.project}"
-		headers = { "PRIVATE-TOKEN": args.token }
+		if args.private_token is not None:
+			headers = { "PRIVATE-TOKEN": args.private_token }
+		elif args.job_token is not None:
+			headers = { "JOB-TOKEN": args.job_token }
+		else:
+			raise RuntimeError("Either private access token (-P) or job access token (-J) must be specified")
+
 		page = 0
 		job_index = 0
 		empty_pages = 0
